@@ -8,7 +8,6 @@
 #import "G8TesseractParameters.h"
 #import "G8RecognitionOperation.h"
 #import "G8Constants.h"
-#import "UIImage+G8Filters.h"
 
 @implementation RNTesseractOcr  {
     G8Tesseract *_tesseract;
