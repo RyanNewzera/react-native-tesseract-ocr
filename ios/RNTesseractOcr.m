@@ -3,6 +3,13 @@
 #import "RCTLog.h"
 #import "GPUImage.h"
 
+#import "G8Tesseract.h"
+#import "G8RecognizedBlock.h"
+#import "G8TesseractParameters.h"
+#import "G8RecognitionOperation.h"
+#import "G8Constants.h"
+#import "UIImage+G8Filters.h"
+
 @implementation RNTesseractOcr  {
     G8Tesseract *_tesseract;
 }
