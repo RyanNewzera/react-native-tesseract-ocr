@@ -1,161 +1,154 @@
-# react-native-tesseract-ocr [![npm version](https://badge.fury.io/js/react-native-tesseract-ocr.svg)](https://badge.fury.io/js/react-native-tesseract-ocr)
+<div align="center">
+  <h1>react-native-tesseract-ocr 👀</h1>
+  <p>
+  react-native-tesseract-ocr is a react-native wrapper for <a href="https://github.com/tesseract-ocr">Tesseract OCR</a>
+  </p>
+</div>
 
-react-native-tesseract-ocr is a react-native wrapper for [Tesseract OCR](https://github.com/tesseract-ocr) using base on
-  - [tess-two](https://github.com/rmtheis/tess-two) for Android
-  - [Tesseract-OCR-iOS](https://github.com/gali8/Tesseract-OCR-iOS) for iOS *(Not implemented yet)*
+[![Version][version-badge]][package]
+[![Install Size][size-badge]][package-size]
+[![Downloads][downloads-badge]][npmcharts]
+[![PRs Welcome][prs-badge]][prs]
+[![Commitizen friendly][cz-badge]][cz]
+[![MIT License][license-badge]][license]
+<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
+<!-- ALL-CONTRIBUTORS-BADGE:END -->
+
+[![Watch on GitHub][github-watch-badge]][github-watch]
+[![Star on GitHub][github-star-badge]][github-star]
+[![Tweet][twitter-badge]][twitter]
+
+This project uses:
+
+- [tess-two][url-tess-and] for Android
+- [Tesseract-OCR-iOS][url-tess-ios] for iOS ⚠️ (This has NOT been implemented yet) ⚠️
+
+NOTE: It is recommended to use react-native >= 0.60.0
 
 ## Getting started
 
-`$ npm install react-native-tesseract-ocr --save` 
-
-or
-
-`$ yarn add react-native-tesseract-ocr` 
+`$ npm i react-native-tesseract-ocr --save`
 
 ### Mostly automatic installation
 
 `$ react-native link react-native-tesseract-ocr`
 
-*Don't forget to ...*
-- Download Trained data [v3.04 Trained data files](https://github.com/tesseract-ocr/tessdata/tree/3.04.00)
-  - iOS: Drag and drop the `tessdata` into your project at root in xCode. Select `Copy items if needed` and `Copy folder reference`
-  - Android: It must be extracted in `android/app/src/main/assets/tessdata`.
-- *install [CocoaPods](https://cocoapods.org/) in your react-native project and add the following line to your Podfile then run `pod install` __(iOS only)__*
-   ```
-   pod 'TesseractOCRiOS', '4.0.0'
-   pod 'GPUImage', '0.1.7'
-   ```
-- Add `$(SRCROOT)/../../../ios/Pods` with `recursive` to `Header Search Paths` of the `RNTesseractOcr` project by select `RNTesseractOcr.xcodeproj` from `Project Navigator` then select `Build Settings` tab, search for `Header Search Paths` __(iOS only)__
 
-### Manual installation
+## Example
 
 
-#### iOS
+<div align="center">
+  <img src="https://raw.githubusercontent.com/jonathanpalma/react-native-tesseract-ocr/master/example/showcase.android.picker.gif" alt="Showcase Android using Picker" width="215" height="430" style="margin: 0px 10px" />
+  <img src="https://raw.githubusercontent.com/jonathanpalma/react-native-tesseract-ocr/master/example/showcase.android.camera.gif" alt="Showcase Android using Camera" width="215" height="430" style="margin: 0px 10px" />
+</div>
 
-1. In XCode, in the project navigator, right click `Libraries` ➜ `Add Files to [your project's name]`
-2. Go to `node_modules` ➜ `react-native-tesseract-ocr` and add `RNTesseractOcr.xcodeproj`
-3. In XCode, in the project navigator, select your project. Add `libRNTesseractOcr.a` to your project's `Build Phases` ➜ `Link Binary With Libraries`
-4. Run your project (`Cmd+R`)<
-
-#### Android
-
-1. Open up `android/app/src/main/java/[...]/MainApplication.java`
-  - Add `import com.reactlibrary.RNTesseractOcrPackage;` to the imports at the top of the file
-  - Add `new RNTesseractOcrPackage()` to the list returned by the `getPackages()` method
-2. Append the following lines to `android/settings.gradle`:
-  	```
-  	include ':react-native-tesseract-ocr'
-  	project(':react-native-tesseract-ocr').projectDir = new File(rootProject.projectDir, 	'../node_modules/react-native-tesseract-ocr/android')
-  	```
-3. Insert the following lines inside the dependencies block in `android/app/build.gradle`:
-  	```
-      compile project(':react-native-tesseract-ocr')
-  	```
+Check the example by yourself [here][url-example]
 
 ## Usage
-```javascript
-import {Platform} from 'react-native';
-import RNTesseractOcr from 'react-native-tesseract-ocr';
 
-const tessOptions = {
-  whitelist: null, 
-  blacklist: '1234567890\'!"#$%&/()={}[]+*-_:;<>'
-};
+### tessOptions
 
-const isIOS = Platform.OS === 'ios';
-const langName = 'LANG_ENGLISH';
-const lang = isIOS ? RNTesseractOcr[langName] : langName;
+| Property  | Type     | Description                                                                |
+| --------- | -------- | -------------------------------------------------------------------------- |
+| allowlist | `string` | List of characters you want to recognize                                   |
+| denylist  | `string` | List of characters you DON'T want to recognize                             |
+| level     | `Level`  | Level of the tokens of the page hierarchy (only used in `recognizeTokens`) |
 
-/**
- * @param {string} imgPath - The path of the image.
- * @param {string} lang - The language you want to process.
- * @param {object} tessOptions - Tesseract options.
- */
-RNTesseractOcr.recognize(imgPath, lang, tessOptions)
-  .then((result) => {
-    this.setState({ ocrResult: result });
-    console.log("OCR Result: ", result);
-  })
-  .catch((err) => {
-    console.log("OCR Error: ", err);
-  })
-  .done();
+_`Level` can be one of the following values 'symbol' | 'block' | 'line' | 'paragraph' | 'word'_
 
+### recognize
+
+```typescript
+import TesseractOcr, { LANG_ENGLISH } from 'react-native-tesseract-ocr';
+
+const tessOptions = {};
+TesseractOcr.recognize(imageSource, LANG_ENGLISH, tessOptions);
 ```
 
-*NOTE: The method _startOcr_ is deprecated. Instead, use _recognize_*
+### recognizeTokens
+
+```typescript
+import TesseractOcr, { LANG_ENGLISH, LEVEL_WORD } from 'react-native-tesseract-ocr';
+
+const tessOptions = { level: LEVEL_WORD };
+TesseractOcr.recognizeTokens(imageSource, LANG_ENGLISH, tessOptions);
+```
 
 
-### Supported languages
-  - LANG_AFRIKAANS
-  - LANG_AMHARIC
-  - LANG_ARABIC
-  - LANG_ASSAMESE
-  - LANG_AZERBAIJANI
-  - LANG_BELARUSIAN
-  - LANG_BOSNIAN
-  - LANG_BULGARIAN
-  - LANG_CHINESE_SIMPLIFIED
-  - LANG_CHINESE_TRADITIONAL
-  - LANG_CROATIAN
-  - LANG_DANISH
-  - LANG_ENGLISH
-  - LANG_ESTONIAN
-  - LANG_FRENCH
-  - LANG_GALICIAN
-  - LANG_GERMAN
-  - LANG_HEBREW
-  - LANG_HUNGARIAN
-  - LANG_ICELANDIC
-  - LANG_INDONESIAN
-  - LANG_IRISH
-  - LANG_ITALIAN
-  - LANG_JAPANESE
-  - LANG_KOREAN
-  - LANG_LATIN
-  - LANG_LITHUANIAN
-  - LANG_NEPALI
-  - LANG_NORWEGIAN
-  - LANG_PERSIAN
-  - LANG_POLISH
-  - LANG_PORTUGUESE
-  - LANG_RUSSIAN
-  - LANG_SERBIAN
-  - LANG_SLOVAK
-  - LANG_SPANISH
-  - LANG_SWEDISH
-  - LANG_TURKISH
-  - LANG_UKRAINIAN
-  - LANG_VIETNAMESE
+### useEventListener
 
-### If you want to use your own trained data file
-  - LANG_CUSTOM
- 
- *Locate your own trained data file as `custom.traineddata` into `android/app/src/main/assets/tessdata`.*
+```typescript
+import React, { useState } from 'react';
+import { useEventListener } from 'react-native-tesseract-ocr';
+
+function App() {
+  const [progress, setProgress] = useState(0);
+  useEventListener('onProgressChange', (p) => {
+    setProgress(p.percent / 100);
+  });
+
+  // return ...
+}
+```
 
 
-## Example 
-Try the included [TesseractOcrSample](https://github.com/jonathanpalma/react-native-tesseract-ocr/tree/master/tesseractOcrSample):
-- `git clone git@github.com:jonathanpalma/react-native-tesseract-ocr.git`
-- `cd react-native-tesseract-ocr/tesseractOcrSample/`
-- `npm install` or `yarn`
 
-*NOTE: Don't forget to ...*
-- *add [v3.04 trained data files](https://github.com/tesseract-ocr/tessdata/tree/3.04.00) to the appropriate folder*
-- *install [CocoaPods](https://cocoapods.org/) in your react-native project and add the following line to your Podfile then run `pod install` __(iOS only)__*
-   ```
-   pod 'TesseractOCRiOS', '4.0.0'
-   ```
+## Contributing
 
-## TODOS
-Check the [project boards](https://github.com/jonathanpalma/react-native-tesseract-ocr/projects)
+### How to contribute?
 
-## Contribution
-Contributions are welcome :raised_hands:
+This is a `commitizen friendly` repository, so instead of creating commits using `git commit`, please use our custom CLI by running:
+
+`$ npm run cz`
+
+## Contributors ✨
+
+Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tr>
+    <td align="center"><a href="https://github.com/jrunestone"><img src="https://avatars3.githubusercontent.com/u/2293001?v=4" width="100px;" alt=""/><br /><sub><b>Johan Runsten</b></sub></a><br /><a href="https://github.com/jonathanpalma/react-native-tesseract-ocr/commits?author=jrunestone" title="Code">💻</a></td>
+  </tr>
+</table>
 
 ## License
-This repository is distributed under [MIT license](https://github.com/jonathanpalma/react-native-tesseract-ocr/blob/master/LICENSE) 
- - [Tesseract OCR](https://github.com/tesseract-ocr) - maintained by Google, is distributed under [Apache 2.0 license](http://www.apache.org/licenses/LICENSE-2.0)
- - [tess-two](https://github.com/rmtheis/tess-two) is distributed under [Apache 2.0 license](https://github.com/rmtheis/tess-two/blob/master/COPYING)
- - [Tesseract-OCR-iOS](https://github.com/gali8/Tesseract-OCR-iOS) is distributed under [MIT license](https://github.com/gali8/Tesseract-OCR-iOS/blob/master/LICENSE.md)
- 
+
+MIT © [jonathanpalma](https://github.com/jonathanpalma)
+
+This library wouldn't be possible without these amazing projects:
+
+- [Tesseract OCR][url-tesseract] - [Apache 2.0 license][url-tesseract-lsc]
+- [tess-two][url-tess-and] - [Apache 2.0 license][url-tess-and-lsc]
+<!-- - [Tesseract-OCR-iOS][url-tess-ios] - [MIT license][url-tess-ios-lsc] -->
+
+[downloads-badge]: https://img.shields.io/npm/dm/react-native-tesseract-ocr.svg?style=flat-square
+[license-badge]: https://img.shields.io/npm/l/react-native-tesseract-ocr.svg?style=flat-square
+[license]: https://github.com/jonathanpalma/react-native-tesseract-ocr/blob/master/LICENSE
+[npmcharts]: http://npmcharts.com/compare/react-native-tesseract-ocr
+[package-size]: https://packagephobia.now.sh/result?p=react-native-tesseract-ocr
+[package]: https://www.npmjs.com/package/react-native-tesseract-ocr
+[prs-badge]: https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square
+[prs]: http://makeapullrequest.com
+[cz-badge]: https://img.shields.io/badge/commitizen-friendly-brightgreen.svg?style=flat-square
+[cz]: http://commitizen.github.io/cz-cli/
+[size-badge]: https://flat.badgen.net/packagephobia/install/react-native-tesseract-ocr
+[version-badge]: https://img.shields.io/npm/v/react-native-tesseract-ocr.svg?style=flat-square
+[github-watch-badge]: https://img.shields.io/github/watchers/jonathanpalma/react-native-tesseract-ocr.svg?style=social
+[github-watch]: https://github.com/jonathanpalma/react-native-tesseract-ocr/watchers
+[github-star-badge]: https://img.shields.io/github/stars/jonathanpalma/react-native-tesseract-ocr.svg?style=social
+[github-star]: https://github.com/jonathanpalma/react-native-tesseract-ocr/stargazers
+[url-example]: https://github.com/jonathanpalma/react-native-tesseract-ocr/tree/master/example
+[url-eslint]: https://eslint.org/
+[url-prettier]: https://prettier.io/
+[url-tesseract]: https://github.com/tesseract-ocr/tesseract
+[url-tesseract-lsc]: https://github.com/tesseract-ocr/tesseract/blob/master/LICENSE
+[url-tess-and]: https://github.com/rmtheis/tess-two
+[url-tess-and-lsc]: https://github.com/rmtheis/tess-two/blob/master/COPYING
+[url-tess-ios]: https://github.com/gali8/Tesseract-OCR-iOS
+[url-tess-ios-lsc]: https://github.com/gali8/Tesseract-OCR-iOS/blob/master/LICENSE.md
+[twitter]: https://twitter.com/intent/tweet?text=Check%20out%20react-native-tesseract-ocr!%20https://github.com/jonathanpalma/react-native-tesseract-ocr
+[twitter-badge]: https://img.shields.io/twitter/url/https/github.com/jonathanpalma/react-native-tesseract-ocr.svg?style=social

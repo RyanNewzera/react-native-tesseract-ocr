@@ -3,6 +3,15 @@
 #import "RCTLog.h"
 #import "GPUImage.h"
 
+#import <AVFoundation/AVFoundation.h>
+#import <CoreMedia/CoreMedia.h>
+#import <CoreVideo/CoreVideo.h>
+#import <CoreImage/CoreImage.h>
+#import <ImageIO/ImageIO.h>
+#import <CoreML/CoreML.h>
+#import <Vision/Vision.h>
+#import <GLKit/GLKit.h>
+
 #import "G8Tesseract.h"
 #import "G8RecognizedBlock.h"
 #import "G8TesseractParameters.h"
@@ -71,6 +80,43 @@
 }
 
 RCT_EXPORT_MODULE()
+RCT_EXPORT_METHOD(recognizeVision:(nonnull NSString*)path
+                  language:(nonnull NSString*)language
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+{
+RCTLogInfo(@"starting Ocr");
+    
+    NSURL *fileURL = [NSURL fileURLWithPath:path];
+    CIImage *image = [CIImage imageWithContentsOfURL:fileURL];
+
+    RCTLogInfo(@"CI Image");
+    
+    VNRecognizeTextRequest *textReq = [VNRecognizeTextRequest new];
+    textReq.recognitionLanguages = @[@"en-us"];
+    
+    NSDictionary *d = [[NSDictionary alloc] init];
+
+    VNImageRequestHandler *handler = [[VNImageRequestHandler alloc] initWithCIImage:image options:d];
+
+    RCTLogInfo(@"Calling handler");
+
+    [handler performRequests:@[textReq] error:nil];
+
+    RCTLogInfo(@"Request Performed");
+    
+    NSString *text = @"";
+    
+    for (VNRecognizedTextObservation *observation in textReq.results) {
+     
+        VNRecognizedText *best = [observation topCandidates:1].firstObject;
+        text = [text stringByAppendingString:(best.string)];
+        text = [text stringByAppendingString:@"\n"];
+    }
+
+    resolve(@[text]);
+}   
+
 RCT_EXPORT_METHOD(recognize:(nonnull NSString*)path
                   language:(nonnull NSString*)language
                   options:(nullable NSDictionary*)options
@@ -81,20 +127,20 @@ RCT_EXPORT_METHOD(recognize:(nonnull NSString*)path
     
     _tesseract = [[G8Tesseract alloc] initWithLanguage:language];
 //    _tesseract.image = [[UIImage imageWithData:[NSData dataWithContentsOfFile:path]] g8_blackAndWhite];
-    
+
     UIImage *originImg = [UIImage imageNamed:path];
     _tesseract.image = [self processImage:originImg];
-    
+
     _tesseract.engineMode = G8OCREngineModeTesseractOnly;
     _tesseract.pageSegmentationMode = G8PageSegmentationModeAuto;
     //_tesseract.delegate = self;
-    
+
     if(options != NULL) {
         NSString *whitelist = [options valueForKey:@"whitelist"];
         if(![whitelist isEqual: [NSNull null]] && [whitelist length] > 0){
             _tesseract.charWhitelist = whitelist;
         }
-        
+
         NSString *blacklist = [options valueForKey:@"blacklist"];
         if(![blacklist isEqual: [NSNull null]] && [blacklist length] > 0){
             _tesseract.charBlacklist = blacklist;
@@ -108,10 +154,10 @@ RCT_EXPORT_METHOD(recognize:(nonnull NSString*)path
     
     BOOL success = _tesseract.recognize;
     NSString *recognizedText = _tesseract.recognizedText;
-    
+
     NSArray *characterBoxes = [_tesseract recognizedBlocksByIteratorLevel:G8PageIteratorLevelSymbol];
     NSMutableArray *boxes = [[NSMutableArray alloc] initWithCapacity:characterBoxes.count];
-    
+
     for (G8RecognizedBlock *block in characterBoxes) {
         [boxes addObject:@{
                            @"text" : block.text,
@@ -125,7 +171,7 @@ RCT_EXPORT_METHOD(recognize:(nonnull NSString*)path
                            @"level" : [NSNumber numberWithInt:block.level]
                            }];
     }
-    
+
     resolve([NSString stringWithFormat:@"%@", recognizedText]);
     
     // reject(@"no_events", @"There were no events", error);
