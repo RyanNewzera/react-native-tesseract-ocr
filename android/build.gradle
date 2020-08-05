@@ -74,6 +74,7 @@ dependencies {
     //noinspection GradleDynamicVersion
     implementation 'com.facebook.react:react-native:+'  // From node_modules
     implementation 'com.rmtheis:tess-two:9.1.0'
+    implementation 'com.google.android.gms:play-services-mlkit-text-recognition:16.1.0'
 }
 
 def configureReactNativePom(def pom) {

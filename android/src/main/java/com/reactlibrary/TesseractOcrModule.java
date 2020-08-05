@@ -7,9 +7,11 @@ import android.os.Environment;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.NonNull;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Promise;
+import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
@@ -20,11 +22,23 @@ import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.googlecode.tesseract.android.ResultIterator;
 import com.googlecode.tesseract.android.TessBaseAPI;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.mlkit.vision.common.InputImage;
+import com.google.mlkit.vision.text.Text;
+import com.google.mlkit.vision.text.TextRecognition;
+import com.google.mlkit.vision.text.TextRecognizer;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+
+import java.lang.Exception;
+
+import android.net.Uri;
 
 public class TesseractOcrModule extends ReactContextBaseJavaModule {
 
@@ -273,5 +287,44 @@ public class TesseractOcrModule extends ReactContextBaseJavaModule {
         }
         in.close();
         out.close();
+    }
+
+    @ReactMethod
+    public void recognizeVision(String imagePath, final Callback myCallback) {
+        Uri imageSource = Uri.parse(imagePath);
+        InputImage image = null;
+        try {
+            image = InputImage.fromFilePath(this.reactContext, imageSource);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        TextRecognizer recognizer = TextRecognition.getClient();
+
+        Task<Text> result =
+        recognizer.process(image)
+                .addOnSuccessListener(new OnSuccessListener<Text>() {
+                    @Override
+                    public void onSuccess(Text visionText) {
+                        // Task completed successfully
+                        String result = "";
+                        for (Text.TextBlock block : visionText.getTextBlocks()) {
+                            for (Text.Line line : block.getLines()) {
+                                result += line.getText();
+                                result += " ";
+                            }
+                            result += "\n\n";
+                        }  
+                        myCallback.invoke(null, result);
+                    }
+                })
+                .addOnFailureListener(
+                        new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                // Task failed with an exception
+                                myCallback.invoke(e.toString(), null);
+                            }
+                        });
     }
 }
